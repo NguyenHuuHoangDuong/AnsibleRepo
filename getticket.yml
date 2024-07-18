@@ -1,0 +1,32 @@
+version: "v1.0"
+tasks:
+  - name: Install Kerberos
+    command: |
+      sudo apt update
+      sudo apt install krb5-user krb5-config libpam-krb5 libpam-ccreds libkrb5-dev -y
+
+  - name: Configure Kerberos
+    command: |
+      echo "[libdefaults]
+      default_realm = DAVINC.COM
+      dns_lookup_realm = false
+      dns_lookup_kdc = true
+
+      [realms]
+      DAVINC.COM = {
+          kdc = kdc.davinc.com
+          admin_server = kdc.davinc.com
+      }
+
+      [domain_realm]
+          .davinc.com = DAVINC.COM
+          davinc.com = DAVINC.COM" | sudo tee /etc/krb5.conf
+
+  - name: Get Kerberos Ticket
+    command: |
+      echo "Duong123@" | kinit test@DAVINC.COM
+
+  - name: Run Ansible Playbook
+    command: |
+      source myenv/bin/activate
+      ansible-playbook -i inventory.yml site.yml
